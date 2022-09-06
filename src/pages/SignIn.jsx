@@ -14,6 +14,10 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 
+//COMPONENTS
+import OAuth from "../components/OAuth"
+
+
 function SignIn() {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
@@ -81,6 +85,7 @@ function SignIn() {
                         </button>
                     </div>
                 </form>
+                <OAuth />
                 <Link to='/sign-up' className="registerLink">Sign up instead</Link>
             </div>
         </>
