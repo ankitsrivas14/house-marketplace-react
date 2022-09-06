@@ -11,6 +11,10 @@ import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'firebase
 import { db } from '../firebase.config'
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore'
 
+//IMPORTS
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function SignUp() {
     const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +54,7 @@ function SignUp() {
             navigate('/');
         }
         catch (error){
-            console.log(error);
+            toast.error('Unable to create user!')
         }
     }
 

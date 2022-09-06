@@ -12,6 +12,9 @@ import ForgotPassword from './pages/ForgotPassword';
 //COMPONENTS
 import Navbar from './components/Navbar';
 
+//IMPORTS
+import { ToastContainer } from 'react-toastify';
+
 
 function App() {
     return (
@@ -19,12 +22,13 @@ function App() {
             <Routes>
                 <Route exact path="/" element={<Explore />} />
                 <Route path="/offers" element={<Offers />} />
-                <Route path="/profile" element={<SignIn />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
             </Routes>
             <Navbar />
+            <ToastContainer />
         </Router>
     );
 }
