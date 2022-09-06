@@ -14,7 +14,7 @@ import ListingItem from "../components/ListingItem"
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Offers() {
+function Category() {
 
     const [listings, setListings] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ function Offers() {
             try {
                 //Get reference
                 const listingsRef = collection(db, 'listings')
-                const q = query(listingsRef, where('offer', '==', true), orderBy('timestamp', 'desc'), limit(10));
+                const q = query(listingsRef, where('type', '==', params.categoryName), orderBy('timestamp', 'desc'), limit(10));
 
                 //Execute Query
                 const querySnap = await getDocs(q);
@@ -44,13 +44,15 @@ function Offers() {
             }
         }
         fetchListings();
-    }, [])
+    }, [params.categoryName])
 
 
     return (
         <div className="category">
             <header>
-                <p className="pageHeader">Offer</p>
+                <p className="pageHeader">
+                    {params.categoryName === 'rent' ? 'Places for rent' : 'Places for sale'}
+                </p>
             </header>
             {loading ? <Spinner /> : listings && listings.length > 0 ? (
                 <>
@@ -63,10 +65,10 @@ function Offers() {
                     </main>
                 </>
             ) : (
-                <p>No listings on offers</p>
+                <p>No listings for {params.categoryName}</p>
             )}
         </div>
     )
 }
 
-export default Offers
+export default Category
