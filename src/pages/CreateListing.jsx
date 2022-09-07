@@ -18,6 +18,7 @@ import { v4 as uuidv4 } from "uuid";
 
 
 function CreateListing() {
+    //eslint-disable-next-line
     const [geoLocationEnabled, setGeoLocationEnabled] = useState(true);
     const [loading, setLoading] = useState(false);
 
@@ -57,6 +58,7 @@ function CreateListing() {
         return () => {
             isMounted.current = false
         }
+        //eslint-disable-next-line
     }, [isMounted])
 
     const onSubmit = async (e) => {
@@ -113,6 +115,8 @@ function CreateListing() {
                                 break;
                             case 'running':
                                 console.log('Upload is running');
+                                break;
+                            default:
                                 break;
                         }
                     },

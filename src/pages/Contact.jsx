@@ -12,6 +12,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function Contact() {
 
+    //eslint-disable-next-line
+
     const [message, setMessage] = useState('');
     const [landlord, setLandlord] = useState(null);
     const [searchParams, setSearchParams] = useSearchParams();
