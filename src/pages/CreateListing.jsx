@@ -4,9 +4,18 @@ import { useNavigate } from "react-router-dom";
 
 //FIREBASE
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage'
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase.config";
 
 //COMPONENTS
 import Spinner from "../components/Spinner";
+
+//IMPORTS
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { v4 as uuidv4 } from "uuid";
+
 
 function CreateListing() {
     const [geoLocationEnabled, setGeoLocationEnabled] = useState(true);
@@ -50,8 +59,101 @@ function CreateListing() {
         }
     }, [isMounted])
 
-    const onSubmit = (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
+
+        if(discountedPrice >= regularPrice){
+            setLoading(false);
+            toast.error('Discounted price needs to be less than regular price.')
+            return;
+        }
+        if(images.length > 6){
+            setLoading(false);
+            toast.error('Max 6 images');
+            return;
+        }
+
+        let geolocation = {}
+        let location;
+
+        if(geoLocationEnabled){
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`)
+            const data = await response.json();
+            const { lat, lng } = data?.results[0]?.geometry?.location || {lat: 0, lng: 0};
+            geolocation.lat = lat || 0;
+            geolocation.lng = lng || 0;
+
+            location = data.status === 'ZERO_RESULTS' ? undefined : data?.results[0]?.formatted_address;
+            if(location === undefined || location.includes(undefined)){
+                setLoading(false);
+                toast.error('Please enter a correct address');
+                return;
+            }
+        }
+        else{
+            geolocation.lat = latitude
+            geolocation.lng = longitude;
+        }
+
+        //Store image in firebase
+        const storeImage = async (image) => {
+            return new Promise((res, rej) => {
+                const storage = getStorage();
+                const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+                const storageRef = ref(storage, 'images/'+fileName);
+                const uploadTask = uploadBytesResumable(storageRef, image);
+
+                uploadTask.on('state_changed', (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes)*100;
+                        console.log(progress);
+                        switch(snapshot.state){
+                            case 'paused':
+                                console.log('Upload is paused');
+                                break;
+                            case 'running':
+                                console.log('Upload is running');
+                                break;
+                        }
+                    },
+                    (error) => {
+                        rej(error)
+                    },
+                    () => {
+                        getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) => {
+                            res(downloadUrl);
+                        })
+                    }
+                )
+
+            })
+        }
+
+        const imgUrls = await Promise.all(
+            [...images].map((image) => storeImage(image))
+        ).catch((error) => {
+            setLoading(false);
+            toast.error('Images not uploaded');
+            return;
+        })
+
+        const formDataCopy = {
+            ...formData,
+            imgUrls,
+            geolocation,
+            timestamp: serverTimestamp()
+        }
+
+        formDataCopy.location = address;
+        delete formDataCopy.images;
+        delete formDataCopy.address;
+
+        !formDataCopy.offer && delete formDataCopy.discountedPrice;
+
+        const docRef = await addDoc(collection(db, 'listings'), formDataCopy)
+        setLoading(false);
+        toast.success('Listing saved')
+        navigate(`/category/${formDataCopy.type}/${docRef.id}`);
     }
     const onMutate = (e) => {
         let boolean = null;
