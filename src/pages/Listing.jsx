@@ -62,7 +62,6 @@ function Listing() {
 
     return (
         <main>
-            {/* {SLIDER} */}
             <div className="shareIconDiv" onClick={handleLinkCopy}>
                 <img src={shareIcon} alt="" />
             </div>
